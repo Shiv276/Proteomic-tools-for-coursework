@@ -1,3 +1,2 @@
 # 3904-Files
-
-Running each script should result in the creation of any number of new txt files in the selected directory with the relevant output of each function.
+All scripts used to analyse MS data from BCMB3904 Assignment 1. 
