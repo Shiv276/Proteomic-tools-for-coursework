@@ -160,82 +160,88 @@ protein_tool = st.selectbox('Pick a Tool (All tools will also provide masses)', 
 if st.button('Digest / Analyse'):
 
     sequence = sequence.replace(' ', '').replace('\n', '').upper()
-
-    for aa in sequence:
-        if aa not in set("ACDEFGHIKLMNPQRSTVWY"):
-            st.error("Either I programmed this thing wrong, or you gave me a seq with letters that are NOT Amino Acids. Spaces or new-lines are okay, but try not to have your letters delimited by any other character.")
-            st.stop()
-
-
-    result = protein_tools[protein_tool](sequence)
-
-    if protein_tool in ['Trypsin Digest', 'AspN Digest']:
-        peptide_masses = []
-
-        for peptide in result:
-            peptide_masses.append(mass_calculator(peptide))
-
-        numLines = len(peptide_masses)
-
-        st.table({
-            'Peptide': result,
-            'Mass': peptide_masses
-        })
-
-        st.download_button('Download peptide names (.txt)', "\n".join(result), f'{protein_tool.replace(' ', '_').lower()}_digested_peptides.txt', on_click='ignore')
-        st.download_button('Download peptide masses (.txt)', "\n".join([str(mass) for mass in peptide_masses]), f'{protein_tool.replace(' ', '_').lower()}_peptide_masses.txt', on_click='ignore')
-
-        df = pd.DataFrame({
-            'Peptide': result,
-            'Mass': peptide_masses
-        })
-
-        st.download_button('Download table (.csv)', df.to_csv(index=False), f'{protein_tool.replace(' ', '_').lower()}_table.csv', on_click='ignore')
-
-        st.text(
-        f"You can just download the txts and paste them into a table with {numLines} "
-        "rows (not incl. header) if you dont want the ugly formatting. (As in like the black highlighting from System dark mode or csv weirdness and stuff).\n\n"
-        "You could alternitavely just paste the table from here if it works out for you (I just personally prefer my own table formatting from scratch)."
-    )
-
-
-
+    if not sequence:
+        st.error("Sequence cannot be empty. If you believe that the tool is being used correctly, please contact me.")
     else:
-        if protein_tool == 'Y-ion Series Builder (Gives a y-ion series + masses based on a peptide)':
+        
+        validSeq = True
+        for aa in sequence:
+            if aa not in set("ACDEFGHIKLMNPQRSTVWY"):
+                st.error("Either I programmed this incorrectly, or you have provided a sequence with letters that are NOT Amino Acids. Spaces or new-lines are okay, but try not to have your letters delimited by any other character.")
+                validSeq = False
+                break
+
+        if validSeq:
+            result = protein_tools[protein_tool](sequence)
 
 
-            #I know this is a stupid control flow but I had a big idea of integrating other tools when I started
-            #and now the fastest way for me to get these done quick/dirty with accurate filenames WHILE somewhat allowing more tools later
-            #is this so deal with it. pls dont judge :pray:
+            if protein_tool in ['Trypsin Digest', 'AspN Digest']:
+                peptide_masses = []
 
-            #Note <result> is already defined as the output of the chosen tool (y ion generation in this case which is a list of y-ion masses)
-            y_ions_identity = y_ion_identities(sequence)
+                for peptide in result:
+                    peptide_masses.append(mass_calculator(peptide))
 
-            st.table({
-                'Name': [f'y{i+1}' for i in range(len(result))],
-                'Y_ion': y_ions_identity,
-                'm/z': [f"{mass:.5f}".rstrip('0').rstrip('.') for mass in result]
-                #^That's just rerouted to be more complicated bcs stupid streamlit was auto-rounding my precise calculations
-            })
+                numLines = len(peptide_masses)
 
-            st.download_button('Download y-ion Identities (.txt)', '\n'.join(y_ions_identity), 'y_ion_identities.txt', on_click='ignore')
-            #^I'm allowed to hardcode filename bcs of the silly control flow around tool selection (I promise the real stuff I make is cleaner and more efficient).
+                st.table({
+                    'Peptide': result,
+                    'Mass': peptide_masses
+                })
 
-            st.download_button('Download y-ion Masses (.txt)', '\n'.join([str(mass) for mass in result]), 'y_ion_masses.txt', on_click='ignore')
+                st.download_button('Download peptide names (.txt)', "\n".join(result), f'{protein_tool.replace(' ', '_').lower()}_digested_peptides.txt', on_click='ignore')
+                st.download_button('Download peptide masses (.txt)', "\n".join([str(mass) for mass in peptide_masses]), f'{protein_tool.replace(' ', '_').lower()}_peptide_masses.txt', on_click='ignore')
 
-            df = pd.DataFrame({
-                'name': [f'y{i+1}' for i in range(len(result))],
-                'y_ion': y_ions_identity,
-                'mass': result
-            })
+                df = pd.DataFrame({
+                    'Peptide': result,
+                    'Mass': peptide_masses
+                })
 
-            st.download_button('Download table (.csv)', df.to_csv(index=False), 'y_ion_translation.csv', on_click='ignore')
+                st.download_button('Download table (.csv)', df.to_csv(index=False), f'{protein_tool.replace(' ', '_').lower()}_table.csv', on_click='ignore')
 
-            st.text(
-                    f"You can just download the txts and paste them into a table with {len(result)} "
-                    "rows (not incl. header) if you dont want the ugly formatting. (As in like the black highlighting from System dark mode or csv weirdness and stuff).\n\n"
-                    "You could alternitavely just paste the table from here if it works out for you (I just personally prefer my own table formatting from scratch)."
-                )
+                st.text(
+                f"You can just download the txts and paste them into a table with {numLines} "
+                "rows (not incl. header) if you dont want the ugly formatting. (As in like the black highlighting from System dark mode or csv weirdness and stuff).\n\n"
+                "You could alternitavely just paste the table from here if it works out for you (I just personally prefer my own table formatting from scratch)."
+            )
+
+
+
+            else:
+                if protein_tool == 'Y-ion Series Builder (Gives a y-ion series + masses based on a peptide)':
+
+
+                    #I know this is a stupid control flow but I had a big idea of integrating other tools when I started
+                    #and now the fastest way for me to get these done quick/dirty with accurate filenames WHILE somewhat allowing more tools later
+                    #is this so deal with it. pls dont judge :pray:
+
+                    #Note <result> is already defined as the output of the chosen tool (y ion generation in this case which is a list of y-ion masses)
+                    y_ions_identity = y_ion_identities(sequence)
+
+                    st.table({
+                        'Name': [f'y{i+1}' for i in range(len(result))],
+                        'Y_ion': y_ions_identity,
+                        'm/z': [f"{mass:.5f}".rstrip('0').rstrip('.') for mass in result]
+                        #^That's just rerouted to be more complicated bcs stupid streamlit was auto-rounding my precise calculations
+                    })
+
+                    st.download_button('Download y-ion Identities (.txt)', '\n'.join(y_ions_identity), 'y_ion_identities.txt', on_click='ignore')
+                    #^I'm allowed to hardcode filename bcs of the silly control flow around tool selection (I promise the real stuff I make is cleaner and more efficient).
+
+                    st.download_button('Download y-ion Masses (.txt)', '\n'.join([str(mass) for mass in result]), 'y_ion_masses.txt', on_click='ignore')
+
+                    df = pd.DataFrame({
+                        'name': [f'y{i+1}' for i in range(len(result))],
+                        'y_ion': y_ions_identity,
+                        'mass': result
+                    })
+
+                    st.download_button('Download table (.csv)', df.to_csv(index=False), 'y_ion_translation.csv', on_click='ignore')
+
+                    st.text(
+                            f"You can just download the txts and paste them into a table with {len(result)} "
+                            "rows (not incl. header) if you dont want the ugly formatting. (As in like the black highlighting from System dark mode or csv weirdness and stuff).\n\n"
+                            "You could alternitavely just paste the table from here if it works out for you (I just personally prefer my own table formatting from scratch)."
+                        )
 
 
 st.divider()
@@ -249,8 +255,8 @@ st.text('Example input: 147.1, 250.2, 321.3')
 peaklist_tools = {'Translate y-ion Spectra to Protein Seqence': translate_yions}
 st.text('Do NOT include the precursor ion mass here (full mass of the peptide). There is a tool to figure out that mass below (sometimes there is more than one AA between the last y-ion and precursor)')
 
-peaklist_tool = st.selectbox('Pick a Tool (Theres literally just one here)', peaklist_tools.keys())
-st.text('One day I might feel compelled to make a proper hub of tools, so the selection menu is just to provide some infrastructure for a potential future project (def never happening)')
+peaklist_tool = st.selectbox('Pick a Tool (Theres just one here for now)', peaklist_tools.keys())
+st.text('One day I might feel compelled to make a proper hub of tools, so the selection menu is just to provide some infrastructure for a potential future project')
 
 tolerance = st.slider('Mass Tolerance (Da)', min_value=0.03, max_value=1.0, value=1.0, step=0.01)
 
@@ -265,60 +271,99 @@ st.markdown("""
 """) #Apparently st.text() doesn't like multiple lines.
 
 if st.button('Analyse'):
-    peaklist = [float(i) for i in peaklist.replace(',', " ").split()]
 
-    ion_series = peaklist_tools[peaklist_tool](peaklist, tolerance)
+    try:
 
-    st.table({'Peptide': ion_series})
+        peaklist = [float(i) for i in peaklist.replace(',', " ").split()]
 
+        if not peaklist:
+            st.error("Please provide some valid peaklist in the box above. If you do believe that it is being used correctly, please contact me.")
+
+        else:
+
+            ion_series = peaklist_tools[peaklist_tool](peaklist, tolerance)
+
+            st.table({'Peptide': ion_series})
+
+    except ValueError:
+        st.error("Please provide a valid peaklist containing only numbers separated by spaces or commas. If you believe that you are using the input correctly, please contact me.")
 
 st.divider()
 
 st.subheader('This part figures out the amino acid sequences between your last recorded y-ion mass and the precursor ion')
-st.text("This should just be one amino acid (very easy to calculate), but there was one such case in the past where two AAs could've fit the gap.\n")
+st.text("This should just be one amino acid (very easy to calculate), but there has been one such case in the past where multiple AAs could've fit the gap.\n")
 
 st.text("Calculate the difference between your final recorded y-ion mass and precursor mass")
 precursor_difference = st.text_area("Enter that difference here:")
 
 if st.button('Find missing AAs'):
-    precursor_difference = float(precursor_difference)
-    hits = findPrecursor(precursor_difference)
 
-    st.table({
-        "Hit": [key for dct in hits for key in dct],
-        "Error": [val for dct in hits for val in dct.values()]
-    })
+    if not precursor_difference.strip():
+        st.error("Please enter a precursor mass difference.")
 
-    st.markdown("""
-    All the hits above are possible Amino Acids that can fit into that gap.
+    else:
 
-    The error is just the difference between the mass of those chosen amino acids and the gap between precursor to final y-ion.
+        precursor_difference_isValid = True
+        try:
+            precursor_difference = float(precursor_difference)
+            if precursor_difference <= 0:
+                raise ValueError
 
-    **I only considered gaps of up to 3 amino acids**. Technically, four amino acids are only possible if the mass difference is:
-    ```
-    57.1 * 4 = ~228.4 or higher.
-    ```
-    ^That is the mass of glycine (smallest mass AA) x 4. Very unlikely to see that.
+        except (ValueError, TypeError):
+            precursor_difference_isValid = False
+            st.error("Please enter a valid number, e.g. 128.09")
 
-    I'd recommend running BLAST searches with those possible amino acids added to your translated spectrum to see which one fits.
+        if precursor_difference_isValid:
+            hits = findPrecursor(precursor_difference)
 
-    Remember hits with two amino acids (i.e A+G) can appear in either order (i.e A+G or G+A) because we only have the amino acid identities to work with (not order).
-    """)
+            if not hits:
+                st.warning("No amino acid combinations were found within the selected tolerance (1 Da). Let me know if this is raised. I don't believe it will be as of now (given appropriate input) and have not built around it yet.")
+
+            else:
+                st.table({
+                    "Hit": [key for dct in hits for key in dct],
+                    "Error": [val for dct in hits for val in dct.values()]
+                })
+
+            st.markdown("""
+            All the hits above are possible Amino Acids that can fit into that gap.
+
+            The error is just the difference between the mass of those chosen amino acids and the gap between precursor to final y-ion.
+
+            **I only considered gaps of up to 3 amino acids**. Technically, four amino acids are only possible if the mass difference is:
+            ```
+            57.1 * 4 = ~228.4 or higher.
+            ```
+            ^That is the mass of glycine (smallest mass AA) x 4. Very unlikely to see that, however you should consider 4+ AAs in the gap if your precursor difference points to that outcome. If this is problematic, let me know and I can perhaps try to build a better model.
+
+            I'd recommend running BLAST searches with those possible amino acids added to your translated spectrum to see which one fits.
+
+            Remember hits with two amino acids (i.e A+G) can appear in either order (i.e A+G or G+A) because we only have the amino acid identities to work with (not order).
+            """)
 
 
 st.divider()
 
 st.subheader("Peptide Mass Calculator")
 st.text("This is just a small calculator that gives you the mass of a given peptide. Might help validate stuff when doing many calculations")
-sequuence_for_mass = st.text_area("Enter Sequence Here:")
+sequence_for_mass = st.text_area("Enter Sequence Here:")
 
 if st.button("Calculate Mass"):
-    sequuence_for_mass = sequuence_for_mass.replace(' ', '').upper()
-    mass = mass_calculator(sequuence_for_mass)
+    sequence_for_mass = sequence_for_mass.replace(' ', '').upper()
 
-    st.table({
-        'Mass (Da)': mass
-    })
+    validSeq = True
+    for aa in sequence_for_mass:
+        if aa not in set("ACDEFGHIKLMNPQRSTVWY"):
+            st.error("Either I programmed this incorrectly, or you have provided a sequence with letters that are NOT Amino Acids. Spaces or new-lines are okay, but try not to have your letters delimited by any other character.")
+            validSeq = False
+            break
+
+    if validSeq:
+        mass = mass_calculator(sequence_for_mass)
+
+        st.table({
+            'Mass (Da)': mass
+        })
 
     
 
@@ -333,9 +378,10 @@ with st.sidebar:
 
     st.markdown("""
     You can view the source code here:
-    [Link Incoming]
+    [Github Repository](https://github.com/Shiv276/Proteomic-tools-for-coursework)
     The code is generally sloppy and kind of inefficient, but functions well enough to provide what I needed.
     """)
+
 
 
 
