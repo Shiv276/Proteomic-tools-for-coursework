@@ -365,6 +365,8 @@ if st.button("Calculate Mass"):
             'Mass (Da)': mass
         })
 
+        st.text("The calculation uses monoisotopic mass and accounts for the terminal H₂O (+18) of the complete peptide with a proton (+1). Adjust accordingly if needed")
+
     
 
 with st.sidebar:
@@ -376,6 +378,9 @@ with st.sidebar:
             'Monoisotopic Mass (Da)': list(masses.values())
         })
 
+    st.text("All calculations with the exception of the y-ion series builder uses 18 Da for water, and 1 Da for a proton.")
+    st.text("The y-ion series builder uses a more precise figure of 18.010565 Da for water, and 1.007276 for a proton. You should adjust your work accordingly if needed")
+    
     st.markdown("""
     You can view the source code here:
     [Github Repository](https://github.com/Shiv276/Proteomic-tools-for-coursework)
