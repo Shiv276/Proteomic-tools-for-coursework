@@ -385,7 +385,7 @@ with st.sidebar:
     You can view the source code here:
     [Github Repository](https://github.com/Shiv276/Proteomic-tools-for-coursework)
     
-    The code is generally sloppy and somewhat inefficient, but functions well enough to provide what I need for now.
+    The code may be viewed as generally sloppy and somewhat inefficient, but functions well enough to provide what I need for now.
     """)
 
 
