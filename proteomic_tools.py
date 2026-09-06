@@ -379,7 +379,8 @@ with st.sidebar:
     st.markdown("""
     You can view the source code here:
     [Github Repository](https://github.com/Shiv276/Proteomic-tools-for-coursework)
-    The code is generally sloppy and kind of inefficient, but functions well enough to provide what I needed.
+    
+    The code is generally sloppy and somewhat inefficient, but functions well enough to provide what I need for now.
     """)
 
 
