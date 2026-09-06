@@ -6,7 +6,7 @@ Broader documentation is not necessary as the tools are explained on the live ap
 
 ## Usage:
 **Live app:**  
-[Open the Streamlit app](add link later)
+[Open the Streamlit app](https://shiv276-proteomic-tools-for-coursework.streamlit.app)
 
 No installation or Python knowledge is required.
 
